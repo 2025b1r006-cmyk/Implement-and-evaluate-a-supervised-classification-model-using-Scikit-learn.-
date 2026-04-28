@@ -1,0 +1,48 @@
+import openai
+import pandas as pd
+
+# 1. Configuration
+# Replace 'your-api-key-here' with your actual OpenAI API Key
+client = openai.OpenAI(api_key='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')
+model_name = "gpt-3.5-turbo" # or "gpt-4"
+
+test_text = "The delivery was delayed by three days and the box was damaged."
+
+# 2. Zero-Shot Prompt (Direct instruction, no examples)
+zero_shot_prompt = f"Classify the sentiment of this text as Positive or Negative: '{test_text}'"
+
+# 3. Few-Shot Prompt (Instruction + structured examples)
+few_shot_prompt = f"""Classify the sentiment of the text. Follow the format of the examples below.
+
+Example 1: "The food was delicious and arrived early." -> Sentiment: Positive
+Example 2: "I hate how this app keeps freezing." -> Sentiment: Negative
+
+Text: "{test_text}"
+Sentiment:"""
+
+def get_completion(prompt):
+    try:
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0 # Low temperature for consistent classification
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error: {e}"
+
+# 4. Execute and Compare
+print("Running Prompts...")
+results = {
+    "Zero-Shot": get_completion(zero_shot_prompt),
+    "Few-Shot": get_completion(few_shot_prompt)
+}
+
+# 5. Display Comparison
+df_comparison = pd.DataFrame(list(results.items()), columns=['Prompting Method', 'Model Output'])
+print("\n--- Comparison Results ---")
+print(df_comparison)
+
+# Analysis:
+# - Zero-Shot: Often gives conversational or verbose answers (e.g., "The sentiment is negative because...").
+# - Few-Shot: Usually strictly follows the provided pattern (e.g., "Sentiment: Negative"), making it easier to parse for apps.
