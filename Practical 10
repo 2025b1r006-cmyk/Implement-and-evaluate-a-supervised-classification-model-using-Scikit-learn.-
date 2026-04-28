@@ -1,0 +1,55 @@
+import os
+from langchain_community.document_loaders import TextLoader
+from langchain_text_splitters import CharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain.chains import RetrievalQA
+from langchain_openai import ChatOpenAI
+
+# 1. Create a dummy document for the RAG system to "read"
+with open("knowledge_base.txt", "w") as f:
+    f.write("""
+    The Blue-Ringed Octopus is a small but deadly marine animal found in the Pacific. 
+    It carries enough venom to kill 26 adult humans within minutes. 
+    There is currently no known antidote for its venom.
+    It primarily feeds on small crustaceans like crabs and shrimp.
+    """)
+
+# 2. Load the Document
+loader = TextLoader("knowledge_base.txt")
+documents = loader.load()
+
+# 3. Text Splitting (Chunking)
+# Large documents must be broken into smaller chunks for the LLM to process
+text_splitter = CharacterTextSplitter(chunk_size=200, chunk_overlap=20)
+chunks = text_splitter.split_documents(documents)
+
+# 4. Create Embeddings (Local/Free version)
+# This turns text into mathematical vectors
+embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+
+# 5. Store in Vector Database (ChromaDB)
+# This allows the system to "search" for the most relevant chunk
+vectorstore = Chroma.from_documents(documents=chunks, embedding=embeddings)
+
+# 6. Setup the LLM and Retrieval Chain
+# Note: Replace 'your-api-key' with your actual OpenAI key to run the generator
+os.environ["OPENAI_API_KEY"] = "your-api-key-here"
+llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+
+rag_chain = RetrievalQA.from_chain_type(
+    llm=llm,
+    chain_type="stuff",
+    retriever=vectorstore.as_retriever()
+)
+
+# 7. Ask a Question
+query = "What does the Blue-Ringed Octopus eat?"
+print(f"Question: {query}")
+
+try:
+    response = rag_chain.invoke(query)
+    print(f"Answer: {response['result']}")
+except Exception as e:
+    print("\n[Note] Retrieval worked, but the LLM step failed because an API key wasn't provided.")
+    print("To get the final answer, add a valid OpenAI API key in step 6.")
