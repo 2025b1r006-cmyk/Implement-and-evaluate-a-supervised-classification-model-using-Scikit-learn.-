@@ -1,0 +1,36 @@
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+# 1. Home route (GET request)
+@app.route('/', methods=['GET'])
+def home():
+    return "API is running! Use Postman or CURL to POST to /process."
+
+# 2. Process route (POST request)
+@app.route('/process', methods=['POST'])
+def process_data():
+    # Get JSON data from the request
+    data = request.get_json()
+    
+    # Validation: check if 'name' exists in the input
+    if not data or 'name' not in data:
+        return jsonify({
+            "status": "error", 
+            "message": "Please provide a 'name' in the JSON body."
+        }), 400
+    
+    # Process the input (Example: greeting and string length)
+    name = data['name']
+    result = {
+        "status": "success",
+        "greeting": f"Hello, {name}!",
+        "name_length": len(name),
+        "server_response": "Data processed successfully"
+    }
+    
+    return jsonify(result), 200
+
+if __name__ == '__main__':
+    # use_reloader=False is required to run Flask inside a Jupyter Notebook cell
+    app.run(port=5000, debug=True, use_reloader=False)
