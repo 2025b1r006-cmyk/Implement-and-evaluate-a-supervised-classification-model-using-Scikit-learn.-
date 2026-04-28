@@ -1,0 +1,41 @@
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+# 1. Load Pre-trained Model and Tokenizer
+# 'distilbert-base-uncased-finetuned-sst-2-english' is a fast, accurate model for sentiment
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
+# 2. Input Data
+text_inputs = [
+    "This transformer model is incredibly efficient and easy to use!",
+    "I'm disappointed with the performance of the latest update."
+]
+
+print("--- NLP Pipeline Execution ---")
+
+for text in text_inputs:
+    # 3. Tokenization
+    # Converts text to numbers (tensors) that the model understands
+    inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+
+    # 4. Model Prediction (Inference)
+    with torch.no_grad():
+        outputs = model(**inputs)
+    
+    # 5. Process Output
+    # The model returns 'logits'. We use softmax to turn them into probabilities.
+    predictions = torch.nn.functional.softmax(outputs.logits, dim=-1)
+    
+    # Get the highest score and its label
+    label_index = torch.argmax(predictions).item()
+    label_name = model.config.id2label[label_index]
+    confidence = predictions[0][label_index].item()
+
+    print(f"\nInput: {text}")
+    print(f"Label: {label_name} ({confidence:.2%})")
+
+# 6. Evaluation Logic (Summary of internal metrics)
+print(f"\nModel Configuration: {model.config.model_type.upper()}")
+print(f"Vocabulary Size: {tokenizer.vocab_size}")
