@@ -1,0 +1,41 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# 1. Load Dataset (Titanic is great for EDA)
+df = sns.load_dataset('titanic')
+
+# 2. Basic Inspection
+print("--- Dataset Info ---")
+print(df.info())
+
+# 3. Descriptive Statistics
+# Includes 'all' to see categorical counts along with numerical means
+print("\n--- Descriptive Statistics ---")
+display(df.describe(include='all').T)
+
+# 4. Handle Missing Values (Simplified for EDA)
+# Correlation matrices cannot handle missing data
+df_numeric = df.select_dtypes(include=['float64', 'int64'])
+df_numeric = df_numeric.fillna(df_numeric.median())
+
+# 5. Correlation Matrix
+# This identifies relationships between features and the target ('survived')
+corr_matrix = df_numeric.corr()
+
+print("\n--- Correlation with Target (Survived) ---")
+# Sorting to see the most influential features at the top
+correlations = corr_matrix['survived'].sort_values(ascending=False)
+print(correlations)
+
+# 6. Visualization: Correlation Heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, cmap='RdBu', fmt='.2f')
+plt.title('Feature Correlation Matrix')
+plt.show()
+
+# 7. Key Feature Insight: Survived vs. Fare and Class
+plt.figure(figsize=(10, 5))
+sns.barplot(data=df, x='pclass', y='survived', hue='who')
+plt.title('Survival Rate by Class and Demographic')
+plt.show()
