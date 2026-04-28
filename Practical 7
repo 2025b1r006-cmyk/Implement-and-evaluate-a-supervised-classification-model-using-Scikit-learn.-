@@ -1,0 +1,47 @@
+import os
+
+# --- PART 1: Initial AI Generation (Base Idea) ---
+# Prompt: "Write a function to search for a word in a file."
+def basic_search(file_path, word):
+    f = open(file_path, 'r')
+    content = f.read()
+    if word in content:
+        print("Found!")
+    f.close()
+
+# --- PART 2: Refined & Optimized Code (The Final Product) ---
+def refined_search(file_path, target_word):
+    """
+    Optimizations:
+    - Memory Efficiency: Reads line-by-line instead of loading the whole file.
+    - Safety: Uses 'with' to ensure the file closes even if an error occurs.
+    - Accuracy: Added case-insensitive matching and line numbering.
+    """
+    if not os.path.exists(file_path):
+        return f"File '{file_path}' not found."
+
+    matches = []
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            for line_num, line in enumerate(f, 1):
+                if target_word.lower() in line.lower():
+                    matches.append(line_num)
+        
+        return f"'{target_word}' found on lines: {matches}" if matches else "No matches found."
+    
+    except Exception as e:
+        return f"An error occurred: {e}"
+
+# --- EXECUTION IN JUPYTER ---
+
+# 1. Create a dummy file for testing
+test_filename = "ai_refinement_test.txt"
+with open(test_filename, "w") as f:
+    f.write("Artificial Intelligence is evolving rapidly.\n")
+    f.write("AI-assisted coding saves time.\n")
+    f.write("Always debug and optimize your generated scripts.")
+
+# 2. Run the refined search
+search_term = "AI"
+print(f"Searching for '{search_term}'...")
+print(refined_search(test_filename, search_term))
