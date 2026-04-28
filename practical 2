@@ -1,0 +1,51 @@
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.utils import to_categorical
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# 1. Load and Prepare Data
+data = load_iris()
+X, y = data.data, data.target
+
+# Scale features (Standardization is essential for Neural Networks)
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+# One-hot encode targets (3 classes)
+y = to_categorical(y)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 2. Design the Feedforward Neural Network
+model = Sequential([
+    # Input layer and Hidden Layer 1 (ReLU activation)
+    Dense(16, activation='relu', input_shape=(4,)),
+    # Hidden Layer 2 (ReLU activation)
+    Dense(8, activation='relu'),
+    # Output Layer (Softmax activation for multi-class classification)
+    Dense(3, activation='softmax')
+])
+
+# 3. Compile the Model
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# 4. Train the Model
+print("Starting training...")
+history = model.fit(X_train, y_train, epochs=60, batch_size=8, verbose=0, validation_split=0.1)
+
+# 5. Evaluate Performance
+loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
+print(f"\nModel Evaluation:")
+print(f"Test Loss: {loss:.4f}")
+print(f"Test Accuracy: {accuracy:.4f}")
+
+# Analysis of Activation Functions:
+# ReLU (Hidden Layers): Effectively solves the 'vanishing gradient' problem, making training faster.
+# Softmax (Output Layer): Squashes the output into a probability distribution (summing to 1.0),
+#                          allowing us to pick the class with the highest probability.
