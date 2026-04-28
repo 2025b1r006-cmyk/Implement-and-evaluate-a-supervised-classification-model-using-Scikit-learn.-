@@ -1,0 +1,51 @@
+import pandas as pd
+
+# --- API MOCK FUNCTION ---
+# Replace this block with your actual OpenAI API call if you have a key:
+# response = client.chat.completions.create(model="gpt-4", messages=[{"role": "user", "content": prompt}])
+def mock_chat_gpt(prompt):
+    if "Brief" in prompt:
+        return "Quantum computing uses qubits to perform calculations much faster than regular computers."
+    elif "Step-by-step" in prompt:
+        return "1. Uses Qubits (0 and 1 at once). 2. Uses Entanglement. 3. Solves complex math instantly."
+    return "Quantum computing is a type of computing that uses quantum-mechanical phenomena."
+
+# 1. Define the Task and Variations
+topic = "How a quantum computer works"
+
+prompts = {
+    "Vague": f"Explain {topic}.",
+    "Brief Constraint": f"Explain {topic} in exactly one sentence.",
+    "Structured/Step-by-step": f"Explain {topic} using a 3-point numbered list for a beginner."
+}
+
+# 2. Execute the Test
+results = []
+
+print(f"Testing Prompt Variations for: {topic}\n" + "-"*50)
+
+for label, prompt_text in prompts.items():
+    # Simulate/Call API
+    response = mock_chat_gpt(prompt_text)
+
+    # Analyze metrics (word count and clarity)
+    word_count = len(response.split())
+
+    results.append({
+        "Prompt Style": label,
+        "Full Prompt": prompt_text,
+        "Output": response,
+        "Word Count": word_count
+    })
+
+# 3. Analyze Results using Pandas
+df = pd.DataFrame(results)
+
+# Display the comparison table
+display(df[['Prompt Style', 'Output', 'Word Count']])
+
+# 4. Analysis of Output Differences
+print("\n--- Prompt Analysis ---")
+print("1. Clarity: The 'Structured' prompt reduces 'hallucination' by forcing a logic flow.")
+print("2. Constraints: The 'Brief' prompt forces the model to prioritize only the most important information.")
+print("3. Variation: Small changes in wording (e.g., 'for a beginner') significantly shift the tone.")
